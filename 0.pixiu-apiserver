@@ -1,0 +1,3 @@
+# vi /etc/kubernetes/manifestss/kube-apiserver.yaml 在启动参数中添加如下内容 
+#
+--feature-gates=RemoveSelfLink=false

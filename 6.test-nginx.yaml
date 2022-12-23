@@ -1,0 +1,83 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-nginx
+  name: test-nginx
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-nginx
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-nginx
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: storage-001
+          readOnly: false
+      - image: busybox:1.28.3
+        imagePullPolicy: IfNotPresent
+        name: nginx-edit
+        command:
+        - /bin/sh
+        - -c
+        - >
+           while true; do
+               echo "$(date +%F\ %T)_pixiu<br>" >> /usr/share/nginx/html/index.html
+               sleep 1
+           done
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: storage-001
+          readOnly: false
+      volumes:
+      - persistentVolumeClaim: 
+          claimName: pvc001
+        name: storage-001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test-nginx
+  name: test-nginx
+  namespace: dev
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: test-nginx
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: test-nginx
+  name: test-ngoinx
+  namespace: dev
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: nginx.pixiu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name:  test-nginx
+                port:
+                  number: 80

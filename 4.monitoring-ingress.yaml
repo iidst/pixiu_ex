@@ -1,0 +1,65 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: pixiu-system
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: k8s-grafana.pixiu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: prometheus
+    prometheus: k8s
+  name: prometheus-k8s
+  namespace: pixiu-system
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: k8s-prom.pixiu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-server
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: alertmanager
+    prometheus: k8s
+  name: alertmanager
+  namespace: pixiu-system
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: k8s-alertm.pixiu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-alertmanager
+                port:
+                  number: 80
